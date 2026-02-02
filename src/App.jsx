@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
-import { Github, Linkedin, Mail, ExternalLink, Globe, MapPin, Sparkles, ArrowRight, MousePointer2, Heart, Lightbulb, Bot, User, AlertCircle, CheckCircle, Box } from 'lucide-react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { Github, Linkedin, Mail, ExternalLink, Globe, MapPin, Sparkles, ArrowRight, Heart, Lightbulb, Bot, User, AlertCircle, CheckCircle, Box } from 'lucide-react';
 
 // Lazy load Three.js visualization for better performance
 const TechVisualization = React.lazy(() => import('./components/TechVisualization'));
@@ -52,7 +52,7 @@ const translations = {
     },
     projects: {
       title: 'Projects',
-      subtitle: 'Scroll horizontally to explore',
+      subtitle: 'Real-world problem solving through code',
       items: [
         {
           title: 'CRM Dashboard',
@@ -74,6 +74,13 @@ const translations = {
           solution: 'Centralized dashboard to manage priorities and case status.',
           tags: ['Tailwind', 'React', 'JavaScript'],
           github: 'https://github.com/Z200-WEB/case-management-system.git'
+        },
+        {
+          title: 'My Portfolio',
+          problem: 'Needed a clear and professional way to present skills, projects, and technical interests for job hunting.',
+          solution: 'A modern, responsive portfolio website designed to showcase business-oriented projects and technical skills.',
+          tags: ['React 18', 'Three.js', 'Tailwind', 'Vite'],
+          github: 'https://github.com/Z200-WEB/my-protofilo.git'
         }
       ],
       view: 'View on GitHub',
@@ -130,7 +137,7 @@ const translations = {
     },
     projects: {
       title: 'プロジェクト',
-      subtitle: '横にスクロールして探索',
+      subtitle: 'コードで課題を解決する',
       items: [
         {
           title: 'CRMダッシュボード',
@@ -152,6 +159,13 @@ const translations = {
           solution: '対応状況や優先度を一元管理するダッシュボード。',
           tags: ['Tailwind', 'React', 'JavaScript'],
           github: 'https://github.com/Z200-WEB/case-management-system.git'
+        },
+        {
+          title: 'ポートフォリオサイト',
+          problem: '就職活動に向けて、スキルや制作物を分かりやすく伝える手段が必要だった。',
+          solution: '業務系プロジェクトや思考プロセスを整理して伝えるモダンなポートフォリオサイト。',
+          tags: ['React 18', 'Three.js', 'Tailwind', 'Vite'],
+          github: 'https://github.com/Z200-WEB/my-protofilo.git'
         }
       ],
       view: 'GitHubで見る',
@@ -458,103 +472,77 @@ const techStack = [
   { name: 'Three.js', Icon: TechIcons.ThreeJS },
 ];
 
-const IconCloud = () => {
-  const containerRef = useRef(null);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+// Tech Card Component
+const TechCard = ({ item }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [hoveredIcon, setHoveredIcon] = useState(null);
-  const animationRef = useRef(null);
-  const angleRef = useRef(0);
-
-  const positions = useMemo(() => {
-    const items = [];
-    const numItems = techStack.length;
-    const radius = 120;
-
-    for (let i = 0; i < numItems; i++) {
-      const phi = Math.acos(-1 + (2 * i) / numItems);
-      const theta = Math.sqrt(numItems * Math.PI) * phi;
-
-      items.push({
-        x: radius * Math.cos(theta) * Math.sin(phi),
-        y: radius * Math.sin(theta) * Math.sin(phi),
-        z: radius * Math.cos(phi),
-        ...techStack[i]
-      });
-    }
-    return items;
-  }, []);
-
-  useEffect(() => {
-    const animate = () => {
-      if (!isHovered) {
-        angleRef.current += 0.004;
-        setRotation({ x: Math.sin(angleRef.current * 0.5) * 0.1, y: angleRef.current });
-      }
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    animationRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationRef.current);
-  }, [isHovered]);
-
-  const handleMouseMove = (e) => {
-    if (!containerRef.current || !isHovered) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientY - rect.top - rect.height / 2) / rect.height;
-    const y = (e.clientX - rect.left - rect.width / 2) / rect.width;
-    setRotation({ x: x * 0.3, y: y * 0.5 + angleRef.current });
-  };
 
   return (
     <div
-      ref={containerRef}
-      className="relative w-full h-[320px] flex items-center justify-center cursor-grab active:cursor-grabbing"
+      className="group relative flex-shrink-0"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); setHoveredIcon(null); }}
-      onMouseMove={handleMouseMove}
-      style={{ perspective: '1000px' }}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className="relative w-[250px] h-[250px]"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: `rotateX(${rotation.x}rad) rotateY(${rotation.y}rad)`,
-        }}
-      >
-        {positions.map((item, i) => {
-          const scale = (item.z + 150) / 270;
-          const opacity = Math.max(0.4, Math.min(1, scale));
-          const isActive = hoveredIcon === i;
+      <div className={`
+        relative flex items-center gap-3 px-5 py-3 rounded-2xl
+        bg-white/[0.03] border border-white/[0.08]
+        hover:bg-white/[0.08] hover:border-purple-500/30
+        transition-all duration-300 cursor-default
+        ${isHovered ? 'scale-105 shadow-[0_0_30px_rgba(139,92,246,0.2)]' : ''}
+      `}>
+        <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.05]">
+          <item.Icon />
+        </div>
+        <span className="text-white font-medium text-sm whitespace-nowrap">{item.name}</span>
 
-          return (
-            <div
-              key={i}
-              className="absolute left-1/2 top-1/2 transition-all duration-200"
-              style={{
-                transform: `translate(-50%, -50%) translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${isActive ? 1.5 : 1})`,
-                opacity: isActive ? 1 : opacity,
-                zIndex: isActive ? 1000 : Math.round(item.z + 200),
-              }}
-              onMouseEnter={() => setHoveredIcon(i)}
-              onMouseLeave={() => setHoveredIcon(null)}
-            >
-              <div
-                className={`p-2.5 rounded-xl backdrop-blur-md cursor-pointer transition-all duration-300 border
-                  ${isActive ? 'bg-white/20 shadow-[0_0_30px_rgba(139,92,246,0.5)] border-purple-500/50' : 'bg-black/30 border-white/10'}`}
-                style={{ width: `${Math.max(36, 42 * scale)}px`, height: `${Math.max(36, 42 * scale)}px` }}
-              >
-                <item.Icon />
-                {isActive && (
-                  <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/80 rounded text-[10px] text-white whitespace-nowrap">
-                    {item.name}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {/* Glow effect */}
+        <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl`} />
       </div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+    </div>
+  );
+};
+
+// Infinite Marquee Component
+const TechMarquee = () => {
+  const row1 = techStack.slice(0, 9);
+  const row2 = techStack.slice(9);
+
+  return (
+    <div className="relative w-full overflow-hidden py-6">
+      {/* Fade edges */}
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+
+      {/* Row 1 - scroll left */}
+      <div className="flex gap-4 mb-4 animate-marquee hover:[animation-play-state:paused]">
+        {[...row1, ...row1, ...row1].map((item, i) => (
+          <TechCard key={`row1-${i}`} item={item} />
+        ))}
+      </div>
+
+      {/* Row 2 - scroll right */}
+      <div className="flex gap-4 animate-marquee-reverse hover:[animation-play-state:paused]">
+        {[...row2, ...row2, ...row2, ...row2].map((item, i) => (
+          <TechCard key={`row2-${i}`} item={item} />
+        ))}
+      </div>
+
+      {/* Marquee animation styles */}
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.33%); }
+        }
+        @keyframes marquee-reverse {
+          0% { transform: translateX(-33.33%); }
+          100% { transform: translateX(0); }
+        }
+        .animate-marquee {
+          animation: marquee 25s linear infinite;
+        }
+        .animate-marquee-reverse {
+          animation: marquee-reverse 20s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
@@ -950,9 +938,9 @@ const BentoSection = ({ t }) => {
 
           {/* Tech Stack Card */}
           <ScrollReveal delay={500} className="md:col-span-2 lg:col-span-4">
-            <BentoCard className="p-4 h-full overflow-hidden" hover={false}>
-              <h3 className="text-xl font-semibold text-white mb-0 px-4 pt-2">{t.tech.title}</h3>
-              <IconCloud />
+            <BentoCard className="p-6 h-full overflow-hidden" hover={false}>
+              <h3 className="text-xl font-semibold text-white mb-2">{t.tech.title}</h3>
+              <TechMarquee />
             </BentoCard>
           </ScrollReveal>
         </div>
@@ -1003,90 +991,105 @@ const VisualizationSection = ({ t, lang }) => {
 // PROJECTS SECTION
 // ============================================
 const ProjectsSection = ({ t }) => {
-  const gradients = ['from-purple-600 via-pink-600 to-red-500', 'from-cyan-500 via-blue-600 to-purple-600', 'from-orange-500 via-red-500 to-pink-600'];
+  const gradients = [
+    'from-purple-600 via-pink-600 to-red-500',
+    'from-cyan-500 via-blue-600 to-purple-600',
+    'from-orange-500 via-red-500 to-pink-600',
+    'from-emerald-500 via-teal-500 to-cyan-600'
+  ];
 
   return (
-    <section id="projects" className="relative py-32 overflow-hidden">
+    <section id="projects" className="relative py-32 px-6">
+      {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px]" />
 
-      <div className="max-w-7xl mx-auto px-6 mb-12">
+      <div className="max-w-6xl mx-auto relative">
+        {/* Header */}
         <ScrollReveal>
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">{t.projects.title}</h2>
-          <p className="text-gray-500 flex items-center gap-2">
-            <MousePointer2 size={16} className="animate-bounce" />
-            {t.projects.subtitle}
-          </p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">{t.projects.title}</h2>
+            <p className="text-gray-500">{t.projects.subtitle}</p>
+          </div>
         </ScrollReveal>
-      </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-8 px-6 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
-        <div className="flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
+        {/* Projects Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {t.projects.items.map((project, i) => (
+            <ScrollReveal key={i} delay={i * 150}>
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative block h-[400px] md:h-[450px] rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 active:scale-[0.98]"
+              >
+                {/* Gradient background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${gradients[i % gradients.length]} opacity-85 group-hover:opacity-100 transition-opacity duration-500`} />
 
-        {t.projects.items.map((project, i) => (
-          <ScrollReveal key={i} delay={i * 200} className="flex-shrink-0 snap-center">
-            <a
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative block w-[85vw] md:w-[500px] lg:w-[600px] h-[480px] md:h-[520px] rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${gradients[i]} opacity-80 group-hover:opacity-100 transition-opacity`} />
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
+                {/* Grid pattern overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:30px_30px]" />
 
-              <div className="absolute top-8 right-8 w-24 h-24 border-2 border-white/30 rounded-2xl rotate-12 group-hover:rotate-[135deg] transition-all duration-1000" />
-              <div className="absolute bottom-20 right-20 w-16 h-16 bg-white/10 rounded-full group-hover:scale-[3] group-hover:opacity-0 transition-all duration-700" />
+                {/* Decorative elements */}
+                <div className="absolute top-6 right-6 w-20 h-20 border-2 border-white/20 rounded-2xl rotate-12 group-hover:rotate-45 group-hover:scale-110 transition-all duration-700" />
+                <div className="absolute top-1/2 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
 
-              {/* GitHub Icon Badge */}
-              <div className="absolute top-6 left-6 p-3 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 group-hover:bg-white/20 transition-all duration-300">
-                <Github size={20} className="text-white" />
-              </div>
-
-              <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">{project.title}</h3>
-
-                  {/* Problem & Solution */}
-                  <div className="space-y-3 mb-5">
-                    <div className="flex items-start gap-2">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black/30 flex items-center justify-center mt-0.5">
-                        <AlertCircle size={12} className="text-red-300" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-red-200 mb-0.5">{t.projects.problemLabel}</p>
-                        <p className="text-sm text-white/80 leading-relaxed">{project.problem}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black/30 flex items-center justify-center mt-0.5">
-                        <CheckCircle size={12} className="text-green-300" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-green-200 mb-0.5">{t.projects.solutionLabel}</p>
-                        <p className="text-sm text-white/80 leading-relaxed">{project.solution}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-5">
-                    {project.tags.map((tag) => (
-                      <span key={tag} className="px-3 py-1 text-sm rounded-full bg-black/20 text-white/90 backdrop-blur-sm border border-white/10">{tag}</span>
-                    ))}
-                  </div>
-                  <span className="inline-flex items-center gap-2 text-white font-medium opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    {t.projects.view}
-                    <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                  </span>
+                {/* GitHub badge */}
+                <div className="absolute top-5 left-5 p-2.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 group-hover:bg-white/20 group-hover:scale-110 transition-all duration-300">
+                  <Github size={18} className="text-white" />
                 </div>
-              </div>
 
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden">
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              </div>
-            </a>
-          </ScrollReveal>
-        ))}
+                {/* Content */}
+                <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                  <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                    {/* Title */}
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">{project.title}</h3>
 
-        <div className="flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
+                    {/* Problem & Solution */}
+                    <div className="space-y-2.5 mb-4">
+                      <div className="flex items-start gap-2">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black/30 flex items-center justify-center mt-0.5">
+                          <AlertCircle size={11} className="text-red-300" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold text-red-200 uppercase tracking-wide">{t.projects.problemLabel}</p>
+                          <p className="text-xs text-white/80 leading-relaxed">{project.problem}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black/30 flex items-center justify-center mt-0.5">
+                          <CheckCircle size={11} className="text-green-300" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold text-green-200 uppercase tracking-wide">{t.projects.solutionLabel}</p>
+                          <p className="text-xs text-white/80 leading-relaxed">{project.solution}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {project.tags.map((tag) => (
+                        <span key={tag} className="px-2.5 py-1 text-xs rounded-full bg-black/20 text-white/90 backdrop-blur-sm border border-white/10">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* View link */}
+                    <span className="inline-flex items-center gap-2 text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-500">
+                      {t.projects.view}
+                      <ExternalLink size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </span>
+                  </div>
+                </div>
+
+                {/* Shine effect on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+              </a>
+            </ScrollReveal>
+          ))}
+        </div>
       </div>
     </section>
   );
